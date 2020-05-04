@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>IceBreaker</title>
+    <style>
+    	* { padding: 0; margin: 0; }
+    	canvas { background: #eee; display: block; margin: 0 auto; }
+        h1{text-align: center;}
+    </style>
+</head>
+<body>
+<h1> Let's play Snake! </h1>
+<br>
+<canvas id="myCanvas" width="608" height="608"></canvas>
+
+<script>
+   var canvas = document.getElementById('myCanvas');
+    const ctx = canvas.getContext('2d');
+
+    // let imageName= new Image();
+    // imageName.src = "path/img.png";
+    // let audioName= new Audio();
+    // audioName.src = "path/audio.png";
+
+    // ctx.drawImage(imageName, x, y, Width, Height)
+    // ctx.fillStyle ='red';
+    // ctx.fillRect (100, 300, 30, 30);
+
+    var box = 32;
+
+    var snake = [];
+    var paused = true;
+    var gameOver = false;
+    var highScore = 0; //will add this later
+
+
+    snake[0] = {
+    x : 9 * box,
+    y : 10 * box
+    };
+    
+    var food = {
+        x: Math.floor(Math.random()*17+1)*box,
+        y: Math.floor(Math.random()*15+3)*box
+    }
+
+    var score = 0
+
+    let direction="UP";
+
+    function drawSnake(){
+        for (let i=0; i<snake.length; i++){
+            ctx.fillStyle= (i==0) ? "green" : "greenyellow";
+            ctx.fillRect(snake[i].x, snake[i].y, box, box);
+            ctx.strokeStyle = 'darkgreen';
+            ctx.strokeRect(snake[i].x, snake[i].y, box, box)
+        }
+    }
+
+    //control the snake
+    document.addEventListener('keydown', changeDirection);
+
+    function changeDirection (evt){
+        let key = evt.keyCode
+        if (key==37 && direction != "RIGHT"){
+            direction='LEFT'
+        }else if (key==38 && direction != "DOWN"){
+            direction='UP'
+        } else if (key==39 && direction != "LEFT"){
+            direction='RIGHT'
+        } else if (key==40 && direction != "UP"){
+            direction='DOWN'
+        } else if (key == 32){
+            if (gameOver){
+                document.location.reload();
+            }else {
+            (paused = !paused)
+            }
+        }
+    }
+
+    // cheack collision function
+    function collision(head,array){
+        for(let i = 0; i < array.length; i++){
+            if(head.x == array[i].x && head.y == array[i].y){
+                return true;
+            }
+        }
+        return false;
+    }
+
+    function draw(){
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        drawSnake();
+
+        ctx.fillStyle = 'orange'
+        ctx.fillRect(food.x, food.y, box, box);
+
+            if (paused){
+            ctx.font = "22px Arial";
+            ctx.fillStyle = "#0095DD"; 
+            ctx.textAlign = "center"; 
+            ctx.fillText("press spacebar", 300, 250);
+            ctx.fillText("to continue", 300, 270);
+            } else if (gameOver){
+            ctx.font = "32px Arial";
+            ctx.fillStyle = "RED";  
+            ctx.textAlign = "center";    
+            ctx.fillText("GAME OVER", 300, 200);
+            ctx.font = "22px Arial";
+            ctx.fillStyle = "#0095DD"; 
+            ctx.fillText("press spacebar", 300, 250);
+            ctx.fillText("to restart", 300, 270);    
+            } else {
+        // old head position
+        let snakeX = snake[0].x;
+        let snakeY = snake[0].y;
+        
+        // which direction
+        if( direction == "LEFT") snakeX -= box;
+        if( direction == "UP") snakeY -= box;
+        if( direction == "RIGHT") snakeX += box;
+        if( direction == "DOWN") snakeY += box;
+
+          // if the snake eats the food
+        if(snakeX == food.x && snakeY == food.y){
+            score++;
+            food = {
+                x : Math.floor(Math.random()*17+1) * box,
+                y : Math.floor(Math.random()*15+3) * box
+            }
+            // we don't remove the tail
+        }else {
+            // remove the tail
+            snake.pop();
+        }
+        
+        // add new Head
+        
+        let newHead = {
+            x : snakeX,
+            y : snakeY
+        }
+        
+        // game over
+        
+        if(snakeX < 0 || snakeX > canvas.width || snakeY < 0 || snakeY > canvas.height || collision(newHead,snake)){
+            gameOver= true;
+        }
+        
+        snake.unshift(newHead);
+        }
+
+        ctx.fillStyle='white'
+        ctx.font='45px Changa One';
+        ctx.fillText(score, 2*box, 1.6*box);    
+    }
+
+let game = setInterval(draw, 100)
+
+</script>
+
+</body>
+</html>
